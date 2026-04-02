@@ -118,9 +118,7 @@ if uploaded_file and job_desc:
     
             st.subheader("🧠 Final Summary")
             st.write(result.get("final_answer"))
-    
-            st.subheader("✉ Email Content")
-            st.write(result.get("email_body"))
+
     
             st.subheader("📢 Status")
             st.success(result.get("status"))
