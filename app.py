@@ -39,10 +39,10 @@ if uploaded_file and job_desc:
     Analyze the resume according to user question.
 
     Resume:
-    {resume_text[:6000]}
+    {resume_text[:3000]}
 
     Job Description:
-    {job_desc}
+    {job_desc[:1500]}
 
     Return STRICT JSON:
 
