@@ -26,7 +26,7 @@ def extract_text(file):
         return file.read().decode("utf-8")
 
 # ---------- JOB DESCRIPTION ---------- #
-job_desc = st.text_area("Ask me a question")
+job_desc = st.text_field("Ask me a question")
 
 if uploaded_file and job_desc:
     resume_text = extract_text(uploaded_file)
