@@ -2,13 +2,16 @@ import streamlit as st
 import pdfplumber
 import requests
 import json
-from google import genai
+from groq import Groq
 
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+# from google import genai
 # Load secrets
-GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+# GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+GROQ_API_KEY=st.secrets["GROQ_API_KEY"]
 N8N_WEBHOOK_URL = st.secrets["N8N_WEBHOOK_URL"]
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+# client = genai.Client(api_key=GEMINI_API_KEY)
 
 st.title("📄 AI Resume Screening Orchestrator")
 
@@ -60,14 +63,22 @@ if uploaded_file and job_desc:
     - score >= 70 → Shortlisted
     - score < 70 → Not Shortlisted
     """
-
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt
+    response = client.chat.completions.create(
+    model="llama-3.1-8b-instant",
+    messages=[
+        {"role": "user", "content": prompt}
+    ],
+    temperature=0
     )
 
+    output = response.choices[0].message.content
+    # response = client.models.generate_content(
+    #     model="gemini-2.0-flash",
+    #     contents=prompt
+    # )
+
     try:
-        data = json.loads(response.text)
+        data = json.loads(output)
         st.success("✅ Analysis Complete")
 
         st.json(data)
@@ -84,7 +95,7 @@ if uploaded_file and job_desc:
 
     except:
         st.error("❌ JSON parsing failed")
-        data = {"error": response.text}
+        data = {"error": output}
 
     # ---------- EMAIL SECTION ---------- #
     st.subheader("📧 Notify Recruiter")
