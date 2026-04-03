@@ -98,27 +98,28 @@ if uploaded_file and job_desc:
         st.error("❌ JSON parsing failed")
         st.write(output)  # shows actual model output (VERY USEFUL)
         data = {}
-    
-    # ---------- EMAIL SECTION ---------- #
-    st.subheader("📧 Notify Recruiter")
-    
-    recruiter_email = st.text_input("Recruiter Email")
-    
-    if st.button("Send Decision Email"):
-    
-        payload = {
-            "analysis": data,
-            "email": recruiter_email
-        }
-    
-        res = requests.post(N8N_WEBHOOK_URL, json=payload)
-    
-        if res.status_code == 200:
-            result = res.json()
 
+    if score >= 70:
+        # ---------- EMAIL SECTION ---------- #
+        st.subheader("📧 Notify Recruiter")
+        
+        recruiter_email = st.text_input("Recruiter Email")
+        
+        if st.button("Send Decision Email"):
+        
+            payload = {
+                "analysis": data,
+                "email": recruiter_email
+            }
+        
+            res = requests.post(N8N_WEBHOOK_URL, json=payload)
+        
+            if res.status_code == 200:
+                result = res.json()
     
-            st.subheader("📢 Status")
-            st.success(result.get("status"))
-    
-        else:
-            st.error("❌ n8n connection failed")
+        
+                st.subheader("📢 Status")
+                st.success(result.get("status"))
+        
+            else:
+                st.error("❌ n8n connection failed")
