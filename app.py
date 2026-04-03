@@ -31,9 +31,26 @@ def extract_text(file):
 
 # ---------- ✅ RESUME VALIDATION ---------- #
 def is_resume(text):
-    keywords = ["education", "experience", "skills", "projects", "internship"]
     text_lower = text.lower()
-    return sum(1 for k in keywords if k in text_lower) >= 3
+
+    # Resume sections (structure)
+    sections = ["education", "experience", "skills", "projects"]
+
+    # Identity indicators (very important)
+    identity = ["email", "phone", "contact", "linkedin", "github"]
+
+    # Count matches
+    section_score = sum(1 for s in sections if s in text_lower)
+    identity_score = sum(1 for i in identity if i in text_lower)
+
+    # Extra check: length (resume is usually structured, not too long essay)
+    word_count = len(text.split())
+
+    # Final logic
+    if section_score >= 2 and identity_score >= 1 and word_count < 3000:
+        return True
+
+    return False
 
 # ---------- JOB DESCRIPTION ---------- #
 job_desc = st.text_input("Ask me a question")
