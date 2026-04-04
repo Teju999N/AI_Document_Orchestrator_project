@@ -112,20 +112,20 @@ if uploaded_file and job_desc:
         st.success("✅ Analysis Complete")
         st.subheader("📄 Candidate Summary")
 
-        st.write(f"👤 Name: {data.get('candidate_name', 'N/A')}")
-        st.write(f"📊 Match Score: {data.get('match_score', 0)}")
+        st.write(f"👤 Name : {data.get('candidate_name', 'N/A')}")
+        st.write(f"📊 Match Score : {data.get('match_score', 0)}")
         
-        st.write("✅ Matched Skills:")
+        st.write("✅ Matched Skills :")
         st.write(", ".join(data.get("matched_skills", [])) or "None")
         
-        st.write("❌ Missing Skills:")
+        st.write("❌ Missing Skills :")
         st.write(", ".join(data.get("missing_skills", [])) or "None")
         
-        st.write(f"💼 Experience Relevance: {data.get('experience_relevance', '')}")
+        st.write(f"💼 Experience Relevance : {data.get('experience_relevance', '')}")
         
-        st.write(f"📌 Decision: {data.get('shortlist_category', '')}")
+        st.write(f"📌 Decision : {data.get('shortlist_category', '')}")
         
-        st.write(f"📝 Reason: {data.get('reason', '')}")
+        st.write(f"📝 Reason : {data.get('reason', '')}")
         # st.json(data)
     
         # ---------- SHORTLIST DISPLAY ---------- #
