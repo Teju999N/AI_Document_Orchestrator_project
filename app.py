@@ -32,11 +32,8 @@ def extract_text(file):
 # ---------- ✅ RESUME VALIDATION ---------- #
 def is_resume(text):
     text_lower = text.lower()
-
-    # Resume sections (structure)
     sections = ["education", "experience", "skills", "projects"]
-
-    # Identity indicators (very important)
+    
     identity = ["email", "phone", "contact", "linkedin", "github"]
 
     # Count matches
@@ -51,18 +48,23 @@ def is_resume(text):
         return True
 
     return False
-
+    
+# ---------- EMAIL EXTRACTION ---------- #
+def extract_email(text):
+    pattern = r"[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+"
+    match = re.search(pattern, text)
+    return match.group(0) if match else None
+    
 # ---------- JOB DESCRIPTION ---------- #
 job_desc = st.text_input("Ask me a question")
 
 if uploaded_file and job_desc:
     resume_text = extract_text(uploaded_file)
-
-    # ✅ VALIDATE BEFORE AI
+    #  VALIDATE BEFORE AI
     if not is_resume(resume_text):
         st.error("❌ Please upload a resume only")
         st.stop()
-        
+
     st.subheader("🔍 Analyzing Resume...")
 
     prompt = f"""
@@ -104,7 +106,7 @@ if uploaded_file and job_desc:
     try:
         output = response.choices[0].message.content
     
-        # ✅ Extract only JSON part (IMPORTANT FIX)
+        # Extract only JSON part
         clean_output = re.search(r'\{.*\}', output, re.DOTALL).group()
     
         data = json.loads(clean_output)
@@ -112,21 +114,21 @@ if uploaded_file and job_desc:
         st.success("✅ Analysis Complete")
         st.subheader("📄 Candidate Summary")
 
-        st.write(f"👤 Name : {data.get('candidate_name', 'N/A')}")
-        st.write(f"📊 Match Score : {data.get('match_score', 0)}")
+        st.write(f"👤 Name: {data.get('candidate_name', 'N/A')}")
+        st.write(f"📊 Match Score: {data.get('match_score', 0)}")
         
-        st.write("✅ Matched Skills :")
+        st.write("✅ Matched Skills:")
         st.write(", ".join(data.get("matched_skills", [])) or "None")
         
-        st.write("❌ Missing Skills :")
+        st.write("❌ Missing Skills:")
         st.write(", ".join(data.get("missing_skills", [])) or "None")
         
-        st.write(f"💼 Experience Relevance : {data.get('experience_relevance', '')}")
+        st.write(f"💼 Experience Relevance: {data.get('experience_relevance', '')}")
         
-        st.write(f"📌 Decision : {data.get('shortlist_category', '')}")
+        st.write(f"📌 Decision: {data.get('shortlist_category', '')}")
         
-        st.write(f"📝 Reason : {data.get('reason', '')}")
-        # st.json(data)
+        st.write(f"📝 Reason: {data.get('reason', '')}")
+          # st.json(data)
     
         # ---------- SHORTLIST DISPLAY ---------- #
         score = int(data.get("match_score", 0))
@@ -143,27 +145,64 @@ if uploaded_file and job_desc:
         st.write(output)  # shows actual model output (VERY USEFUL)
         data = {}
 
-    if score >= 70:
-        # ---------- EMAIL SECTION ---------- #
-        st.subheader("📧 Notify Recruiter")
-        
-        recruiter_email = st.text_input("Recruiter Email")
-        
-        if st.button("Send Decision Email"):
-        
-            payload = {
-                "analysis": data,
-                "email": recruiter_email
-            }
-        
+    def send_to_n8n(payload):
+        try:
             res = requests.post(N8N_WEBHOOK_URL, json=payload)
-        
-            if res.status_code == 200:
+    
+            if res.status_code != 200:
+                st.error(f"❌ Error: {res.status_code}")
+                st.write(res.text)
+                return
+    
+            try:
                 result = res.json()
     
-        
                 st.subheader("📢 Status")
-                st.success(result.get("status"))
-        
-            else:
-                st.error("❌ n8n connection failed")
+                st.success(result.get("Status"))
+    
+            except:
+                st.error("❌ Invalid JSON from n8n")
+                st.write(res.text)
+
+        except Exception as e:
+            st.error("❌ n8n connection failed")
+            st.write(str(e))
+  
+    # ---------- EMAIL SECTION ---------- #
+    
+    candidate_email = extract_email(resume_text)
+    
+    # ✅ CASE 1: SHORTLISTED
+    if score >= 70:
+    
+        recruiter_email = st.text_input("Recruiter Email")
+    
+        if st.button("Send Selection Email"):
+    
+            payload = {
+                "analysis": data,
+                "score": score,
+                "candidate_email": candidate_email,
+                "recruiter_email": recruiter_email,
+                "type": "selected"   # 🔥 helpful in n8n
+            }
+    
+            send_to_n8n(payload)
+    
+    # ❌ CASE 2: NOT SHORTLISTED
+    else:
+        if candidate_email:
+            st.success(f"📧 Candidate Email: {candidate_email}")
+        else:
+            candidate_email = st.text_input("Enter Candidate Email")
+    
+        if st.button("Send Feedback Email"):
+    
+            payload = {
+                "analysis": data,
+                "score": score,
+                "candidate_email": candidate_email,
+                "type": "rejected"   # 🔥 helpful in n8n
+            }
+    
+            send_to_n8n(payload)
