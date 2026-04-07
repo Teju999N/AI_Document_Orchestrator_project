@@ -9,6 +9,7 @@ client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 # from google import genai
 # Load secrets
 # GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+
 GROQ_API_KEY=st.secrets["GROQ_API_KEY"]
 N8N_WEBHOOK_URL = st.secrets["N8N_WEBHOOK_URL"]
 
